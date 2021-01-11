@@ -1,30 +1,20 @@
-const { findAuthorById } = require('./books');
-
-const totalBooksCount = books => {
-  let totalBooks = 0;
-  for (book in books) {
-    books[book] ? totalBooks+=1 : totalBooks+=0;
-  }
-  return totalBooks;
+function totalBooksCount(books) {
+  return books.length;
 }
 
-const totalAccountsCount = accounts => {
-  let totalAccounts = 0;
-  for (account in accounts) {
-    accounts[account] ? totalAccounts+=1 : totalAccounts+=0;
-  }
-  return totalAccounts;
+function totalAccountsCount(accounts) {
+  return accounts.length;
 }
 
-const booksBorrowedCount = books => {
+function booksBorrowedCount(books) {
   let totalBorrowed = 0;
-  for (book in books) {
-    books[book].borrows.some((items) => items.returned === false) ? totalBorrowed += 1 : totalBorrowed +=0;
-  }
-  return totalBorrowed; 
+  books.some((book) => {
+    book.borrows.some((borrow) => borrow.returned === false ? totalBorrowed += 1 : totalBorrowed +=0)
+  })
+  return totalBorrowed;
 }
 
-const getMostCommonGenres = books => {
+function getMostCommonGenres(books) {
   let unorderedList = [];
   // create object with genre and count
   for (book in books) {
@@ -47,7 +37,7 @@ const getMostCommonGenres = books => {
   return orderedList.slice(0,5);
 }
 
-const getMostPopularBooks = books => {
+function getMostPopularBooks(books) {
   let unorderedList = [];
   // create object with title and count
   for (book in books) {
@@ -65,24 +55,38 @@ const getMostPopularBooks = books => {
 }
 
 
-const getMostPopularAuthors = (books, authors) => {
-  // Reduce
-  const unorderedList = books.reduce((acc, book) => {
+function getMostPopularAuthors(books, authors) {
+  const unorderedList = [];  
+  
+  // Loop through the Books array (1)
+  books.forEach((book) => {
+    const listItem = {};
     const bookId = book.authorId;
-    // Helper Function
-    const foundAuthor = findAuthorById(authors, bookId);
-    const firstName = foundAuthor.name.first;
-    const lastName = foundAuthor.name.last;
-    const name = `${firstName} ${lastName}`
-    const count = book.borrows.length;
-    // Object Shorthand
-    acc.push({name, count});
+    
+    // Find matching author (2)
+    authors.find((author) => {
+      if (author.id === bookId) listItem.name = `${author.name.first} ${author.name.last}`;
+    })
+
+    // Reduce to get the count (3)
+    listItem.count = book.borrows.reduce((acc, borrow) => {
+      if (book.authorId) {
+        acc++;
+      }
     return acc;
-  }, []);
-  // Sort List
-  const orderedList = unorderedList.sort((obj1, obj2) => obj1.count < obj2.count ? 1 : -1);
-  return orderedList.slice(0,5);
+    }, 0);
+
+    // Push items into an array (4)
+    unorderedList.push(listItem);
+  })
+
+  // Sort List (5)
+  const orderedList = unorderedList.sort((nameA, nameB) => nameA.count > nameB.count ? -1 : 1);
+  orderedList.length = 5;
+  
+  return orderedList; 
 }
+
 
 module.exports = {
   totalBooksCount,
